@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🏛 شورای خرد — سرویس شخصی شورای فیلسوفان ایرانی</title>
+<style>
+  @font-face {
+    font-family: Vazir;
+    src: url(https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font@v30.1.0/dist/Vazir-Regular.woff2) format(woff2);
+    font-weight: 400;
+  }
+  @font-face {
+    font-family: Vazir;
+    src: url(https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font@v30.1.0/dist/Vazir-Bold.woff2) format(woff2);
+    font-weight: 700;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: Vazir, system-ui, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    line-height: 1.9;
+    overflow-x: hidden;
+  }
+  .container { max-width: 800px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+  /* Hero */
+  .hero {
+    text-align: center;
+    padding: 4rem 0 3rem;
+    position: relative;
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 10%;
+    width: 80%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #6366f1, transparent);
+  }
+  .hero h1 {
+    font-size: 2.8rem;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(135deg, #f59e0b, #ef4444, #8b5cf6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .hero .subtitle {
+    font-size: 1.2rem;
+    color: #94a3b8;
+    margin-bottom: 1.5rem;
+  }
+  .hero .tagline {
+    font-size: 1.05rem;
+    color: #cbd5e1;
+    max-width: 600px;
+    margin: 0 auto 2rem;
+  }
+  .badge {
+    display: inline-block;
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 999px;
+    padding: 0.3rem 1rem;
+    font-size: 0.85rem;
+    color: #94a3b8;
+  }
+  .badge span { color: #34d399; }
+
+  /* Sections */
+  section { margin: 3.5rem 0; }
+  h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    color: #f1f5f9;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  h2::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #1e293b;
+    margin-right: 1rem;
+  }
+  h3 { font-size: 1.1rem; color: #e2e8f0; margin: 1.5rem 0 0.5rem; }
+
+  p { color: #94a3b8; margin-bottom: 1rem; }
+  a { color: #818cf8; text-decoration: none; }
+  a:hover { color: #a5b4fc; text-decoration: underline; }
+
+  /* Sages grid */
+  .sages {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1rem;
+    margin: 1.5rem 0;
+  }
+  .sage-card {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 1rem 1.2rem;
+    transition: border-color .2s;
+  }
+  .sage-card:hover { border-color: #6366f1; }
+  .sage-card .emoji { font-size: 1.4rem; }
+  .sage-card .name { font-weight: 700; margin: 0.3rem 0 0.2rem; }
+  .sage-card .role { font-size: 0.8rem; color: #64748b; }
+  .sage-card .desc { font-size: 0.85rem; color: #94a3b8; margin-top: 0.3rem; }
+
+  /* Steps */
+  .steps { counter-reset: step; }
+  .step {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    position: relative;
+    padding-right: 4rem;
+  }
+  .step::before {
+    counter-increment: step;
+    content: counter(step);
+    position: absolute;
+    right: 1rem;
+    top: 1.5rem;
+    width: 2rem;
+    height: 2rem;
+    background: #6366f1;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.9rem;
+  }
+  .step .title { font-weight: 700; margin-bottom: 0.3rem; }
+  .step .detail { font-size: 0.9rem; color: #94a3b8; }
+
+  code {
+    background: #0f172a;
+    color: #a5b4fc;
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    font-family: 'Cascadia Code', 'Fira Code', monospace;
+    font-size: 0.85rem;
+    direction: ltr;
+    display: inline-block;
+  }
+  pre {
+    background: #0f172a;
+    border: 1px solid #1e293b;
+    border-radius: 10px;
+    padding: 1rem 1.2rem;
+    overflow-x: auto;
+    direction: ltr;
+    text-align: left;
+    margin: 0.5rem 0 1.2rem;
+    font-size: 0.85rem;
+    color: #e2e8f0;
+  }
+  pre .comment { color: #64748b; }
+  pre .cmd { color: #34d399; }
+
+  /* Commands table */
+  .cmds { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+  .cmds th, .cmds td {
+    text-align: right;
+    padding: 0.6rem 0.8rem;
+    border-bottom: 1px solid #1e293b;
+    font-size: 0.9rem;
+  }
+  .cmds th { color: #94a3b8; font-weight: 400; font-size: 0.8rem; }
+  .cmds td:first-child { font-family: monospace; color: #a5b4fc; direction: ltr; }
+  .cmds tr:hover td { background: #1e293b40; }
+
+  /* Features */
+  .features {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+  .feature {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 1.2rem;
+  }
+  .feature .icon { font-size: 1.5rem; }
+  .feature .title { font-weight: 700; margin: 0.3rem 0 0.2rem; }
+  .feature .desc { font-size: 0.85rem; color: #94a3b8; }
+  @media (max-width: 600px) { .features { grid-template-columns: 1fr; } }
+
+  /* Footer */
+  footer {
+    text-align: center;
+    padding: 3rem 0;
+    color: #475569;
+    font-size: 0.85rem;
+  }
+
+  .cta-btn {
+    display: inline-block;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: #fff;
+    padding: 0.8rem 2rem;
+    border-radius: 10px;
+    font-weight: 700;
+    margin: 1rem 0.5rem 0;
+    transition: transform .15s, box-shadow .15s;
+  }
+  .cta-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px #6366f140;
+    text-decoration: none;
+    color: #fff;
+  }
+  .cta-btn.sec {
+    background: #1e293b;
+    border: 1px solid #334155;
+  }
+  .cta-btn.sec:hover { background: #334155; box-shadow: none; transform: none; }
+
+  .highlight { color: #f59e0b; }
+  .footnote { font-size: 0.85rem; color: #64748b; margin-top: 0.5rem; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<!-- Hero -->
+<div class="hero">
+  <h1>🏛 شورای خرد</h1>
+  <div class="subtitle">سرویس شخصی شورای فیلسوفان ایرانی</div>
+  <div class="tagline">
+    یک ربات تلگرام شخصی که با کلید API میسترال خودت، شورایی از ۱۰ اندیشمند بزرگ ایران را
+    تشکیل می‌دهد تا درباره هر موضوعی که می‌پرسی بحث کنند.
+  </div>
+  <div class="badge">
+    <span>●</span> رایگان و اوپن‌سورس &nbsp;·&nbsp; هر کاربر کلید API شخصی خودش
+  </div>
+  <div style="margin-top: 1.5rem">
+    <a class="cta-btn" href="#setup">شروع کن 🚀</a>
+    <a class="cta-btn sec" href="https://github.com/YOUR_USER/council-hub" target="_blank">مشاهده در گیت‌هاب</a>
+  </div>
+</div>
+
+<!-- Features -->
+<section>
+  <h2>✨ ویژگی‌ها</h2>
+  <div class="features">
+    <div class="feature">
+      <div class="icon">🔐</div>
+      <div class="title">خصوصی و شخصی</div>
+      <div class="desc">هر کاربر کلید API میسترال خودش را می‌دهد. داده‌ها فقط بین تو و میسترال است.</div>
+    </div>
+    <div class="feature">
+      <div class="icon">⚡</div>
+      <div class="title">زیر ۱۵ ثانیه</div>
+      <div class="desc">با تکنیک Batch Mistral، همه حکیم‌ها هم‌زمان نظر می‌دهند. شورا در چند ثانیه کامل می‌شود.</div>
+    </div>
+    <div class="feature">
+      <div class="icon">💰</div>
+      <div class="title">رایگان روی Cloudflare</div>
+      <div class="desc">ورکر روی Free Plan کلودفلر اجرا می‌شود. فقط هزینه API میسترال (چند سنت) را می‌دهی.</div>
+    </div>
+    <div class="feature">
+      <div class="icon">🔄</div>
+      <div class="title">قابل توسعه</div>
+      <div class="desc">می‌توانی اعضای شورا را تغییر دهی، حکیم اضافه کنی، یا پانل جدید بسازی.</div>
+    </div>
+    <div class="feature">
+      <div class="icon">🌐</div>
+      <div class="title">زبان فارسی</div>
+      <div class="desc">همه خروجی‌ها به فارسی روان با نثر ادبی و ارجاع به آثار کلاسیک.</div>
+    </div>
+    <div class="feature">
+      <div class="icon">📄</div>
+      <div class="title">گزارش مارک‌داون</div>
+      <div class="desc">بعد از هر جلسه یک فایل گزارش کامل قابل دریافت است.</div>
+    </div>
+  </div>
+</section>
+
+<!-- Sages -->
+<section>
+  <h2>👥 اعضای شورا</h2>
+  <div class="sages">
+    <div class="sage-card">
+      <div class="emoji">🔵</div>
+      <div class="name">فارابی</div>
+      <div class="role">رئیس جلسه</div>
+      <div class="desc">منطق‌گرا، علل اربعه، مدینه فاضله</div>
+    </div>
+    <div class="sage-card">
+      <div class="emoji">⚕️</div>
+      <div class="name">رازی</div>
+      <div class="role">عضو</div>
+      <div class="desc">تجربه‌گرا، پزشک، شک‌آور</div>
+    </div>
+    <div class="sage-card">
+      <div class="emoji">📚</div>
+      <div class="name">ابن‌سینا</div>
+      <div class="role">عضو</div>
+      <div class="desc">فلسفه، طب، برهان سینوی</div>
+    </div>
+    <div class="sage-card">
+      <div class="emoji">🌹</div>
+      <div class="name">سعدی</div>
+      <div class="role">عضو</div>
+      <div class="desc">اخلاق، سیاست عملی، گلستان</div>
+    </div>
+    <div class="sage-card">
+      <div class="emoji">🔭</div>
+      <div class="name">خیام</div>
+      <div class="role">عضو</div>
+      <div class="desc">ریاضی، نجوم، شک فلسفی</div>
+    </div>
+    <div class="sage-card">
+      <div class="emoji">✨</div>
+      <div class="name">ملاصدرا</div>
+      <div class="role">عضو</div>
+      <div class="desc">وجودگرا، حرکت جوهری</div>
+    </div>
+    <div class="sage-card">
+      <div class="emoji">⚡</div>
+      <div class="name">امیرکبیر</div>
+      <div class="role">عضو</div>
+      <div class="desc">عملگرا، نوسازی، دارالفنون</div>
+    </div>
+    <div class="sage-card">
+      <div class="emoji">🏛️</div>
+      <div class="name">خواجه‌نظام</div>
+      <div class="role">عضو</div>
+      <div class="desc">سیاست، امنیت، سیاست‌نامه</div>
+    </div>
+    <div class="sage-card">
+      <div class="emoji">🟢</div>
+      <div class="name">بیرونی</div>
+      <div class="role">دبیر جلسه</div>
+      <div class="desc">دانشمند، دقیق، بی‌طرف</div>
+    </div>
+    <div class="sage-card">
+      <div class="emoji">🟠</div>
+      <div class="name">مولانا</div>
+      <div class="role">عضو</div>
+      <div class="desc">عارف، شهودی، مثنوی</div>
+    </div>
+  </div>
+</section>
+
+<!-- Panels -->
+<section>
+  <h2>🎯 پانل‌ها</h2>
+  <table class="cmds">
+    <tr><th>پانل</th><th>تعداد</th><th>اعضا</th></tr>
+    <tr><td>--quick</td><td>۲ حکیم</td><td>فارابی، رازی</td></tr>
+    <tr><td>--full</td><td>۵ حکیم</td><td>فارابی، رازی، ابن‌سینا، سعدی، مولانا</td></tr>
+    <tr><td>--all</td><td>۱۰ حکیم</td><td>همه</td></tr>
+  </table>
+</section>
+
+<!-- Setup Guide -->
+<section id="setup">
+  <h2>🚀 راه‌اندازی (۵ دقیقه)</h2>
+  <p>برای داشتن سرویس شخصی خودت، مراحل زیر را انجام بده:</p>
+
+  <div class="steps">
+
+    <div class="step">
+      <div class="title">۱. ربات تلگرام بساز</div>
+      <div class="detail">
+        توی تلگرام برو به <strong>@BotFather</strong> و دستور <code>/newbot</code> را بزن.
+        اسم ربات را مثلاً <code>ShorayeKheradBot</code> بگذار. توکنی که می‌گیری را ذخیره کن.
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="title">۲. کلید API میسترال بگیر</div>
+      <div class="detail">
+        برو به <a href="https://console.mistral.ai/api-keys/" target="_blank">console.mistral.ai</a>،
+        ثبت‌نام کن و یک کلید API جدید بساز. کلید با <code>sk-mi</code> شروع می‌شود.
+        <span class="highlight">رایگان:</span> Mistral برای کاربران جدید ۱ میلیون توکن رایگان می‌دهد.
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="title">۳. ورکر را روی کلودفلر دیپلوی کن</div>
+      <div class="detail">
+        کل پروژه را از گیت‌هاب کلون کن و مراحل زیر را در ترمینال اجرا کن:
+      </div>
+      <pre>
+<span class="comment"># Clone</span>
+git clone https://github.com/YOUR_USER/council-hub.git
+cd council-hub/worker
+
+<span class="comment"># Install dependencies</span>
+npm install
+
+<span class="comment"># Create KV namespaces and copy IDs</span>
+npx wrangler kv:namespace create KEYS
+npx wrangler kv:namespace create SESSIONS
+
+<span class="comment"># Edit wrangler.toml — paste the KV IDs</span>
+<span class="comment"># Set secrets</span>
+npx wrangler secret put TELEGRAM_BOT_TOKEN
+<span class="comment"># Paste your bot token when prompted</span>
+
+npx wrangler secret put COUNCIL_SECRET
+<span class="comment"># Generate: openssl rand -hex 32</span>
+
+<span class="comment"># Deploy</span>
+npx wrangler deploy</pre>
+    </div>
+
+    <div class="step">
+      <div class="title">۴. وب‌هوک تلگرام را تنظیم کن</div>
+      <div class="detail">
+        بعد از دیپلوی، آدرس ورکرت را از خروجی <code>wrangler deploy</code> بردار
+        (مثلاً <code>council-worker.YOUR.workers.dev</code>) و اجرا کن:
+      </div>
+      <pre>
+curl "https://api.telegram.org/bot&lt;TOKEN&gt;/setWebhook?url=https://council-worker.YOUR.workers.dev/"</pre>
+    </div>
+
+    <div class="step">
+      <div class="title">۵. به ربات خودت پیام بده</div>
+      <div class="detail">
+        توی تلگرام رباتت را باز کن و <code>/start</code> بزن.
+        بعد کلید API را تنظیم کن:
+      </div>
+      <pre>/setkey sk-mi-YOUR_MISTRAL_KEY</pre>
+      <div class="detail">
+        حالا می‌توانی سوال بپرسی:
+      </div>
+      <pre>/council --full آینده هوش مصنوعی در ایران</pre>
+    </div>
+
+  </div>
+</section>
+
+<!-- Commands -->
+<section>
+  <h2>🤖 دستورات ربات</h2>
+  <table class="cmds">
+    <tr><th>دستور</th><th>توضیح</th></tr>
+    <tr><td>/start</td><td>خوش‌آمدگویی</td></tr>
+    <tr><td>/help</td><td>راهنمای کامل</td></tr>
+    <tr><td>/setkey sk-mi...</td><td>تنظیم کلید API میسترال (فقط یک بار)</td></tr>
+    <tr><td>/council --full ...</td><td>شورای ۵ نفره (پیش‌فرض)</td></tr>
+    <tr><td>/council --quick ...</td><td>شورای ۲ نفره چکیده</td></tr>
+    <tr><td>/council --all ...</td><td>شورای کامل ۱۰ نفره</td></tr>
+    <tr><td>/status</td><td>وضعیت جلسه فعلی</td></tr>
+    <tr><td>/report</td><td>گزارش آخرین شورا</td></tr>
+    <tr><td>/ping</td><td>بررسی سلامت ربات</td></tr>
+  </table>
+</section>
+
+<!-- How it works -->
+<section>
+  <h2>⚙️ نحوه کار</h2>
+
+  <h3>فازهای جلسه</h3>
+  <div class="steps">
+    <div class="step">
+      <div class="title">🔵 افتتاحیه (فارابی)</div>
+      <div class="detail">تحلیل مسئله با چهار علت: مادی، صوری، فاعلی، غایی. معرفی اعضا.</div>
+    </div>
+    <div class="step">
+      <div class="title">💬 نظرات اولیه</div>
+      <div class="detail">هر حکیم به‌نوبت نظر خود را با ارجاع به آثارش بیان می‌کند.</div>
+    </div>
+    <div class="step">
+      <div class="title">⚡ گفتگو و نقد (۲ دور)</div>
+      <div class="detail">اعضا به صورت تصادفی یکدیگر را نقد می‌کنند. مناظره زنده.</div>
+    </div>
+    <div class="step">
+      <div class="title">📋 صورت‌جلسه (بیرونی)</div>
+      <div class="detail">دبیر جلسه نقاط اشتراک و اختلاف را ثبت می‌کند.</div>
+    </div>
+    <div class="step">
+      <div class="title">🏆 رأی نهایی (فارابی)</div>
+      <div class="detail">رئیس جمع‌بندی می‌کند: اجماع / اکثریت / فاقد اجماع.</div>
+    </div>
+  </div>
+
+  <h3>معماری فنی</h3>
+  <p>
+  ورکر کلودفلر وب‌هوک تلگرام را دریافت می‌کند. هر جلسه ۲-۳ بار
+  مدل <code>mistral-large-latest</code> را با پرامپت‌های دسته‌ای صدا می‌زند (نه ۲۵ بار).
+  خروجی هر حکیم بلافاصله به تلگرام فرستاده می‌شود. کل جلسه در
+  <strong>کمتر از ۱۵ ثانیه</strong> کامل می‌شود.
+  </p>
+</section>
+
+<!-- Cost -->
+<section>
+  <h2>💰 هزینه</h2>
+  <p>
+  Cloudflare Workers: <strong>رایگان</strong> (Free Plan ۱۰۰k req/day)<br>
+  Cloudflare KV: <strong>رایگان</strong> (تا ۱GB)<br>
+  Mistral AI: هزینه هر جلسه ~۰.۰۰۲ دلار (۲۵۰ جلسه = ~۰.۵ دلار). کاربران جدید ۱M توکن رایگان دارند.<br>
+  <span class="highlight">جمع:</span> ماهی ~۰.۵ دلار برای استفاده معمولی.
+  </p>
+</section>
+
+<footer>
+  <p>🏛 شورای خرد — پروژه اوپن‌سورس با ❤️ برای فرهنگ و خرد ایرانی</p>
+</footer>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,18 @@
+name = "council-worker"
+main = "src/index.ts"
+compatibility_date = "2024-11-01"
+
+# KV namespaces
+[[kv_namespaces]]
+binding = "KEYS"
+id = ""          # User: run `wrangler kv:namespace create KEYS` and paste here
+preview_id = ""
+
+[[kv_namespaces]]
+binding = "SESSIONS"
+id = ""          # User: run `wrangler kv:namespace create SESSIONS` and paste here
+preview_id = ""
+
+# Secrets (set via wrangler secret put)
+# TELEGRAM_BOT_TOKEN — Telegram bot token from @BotFather
+# COUNCIL_SECRET    — internal token for step chain auth
