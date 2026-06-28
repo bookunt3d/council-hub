@@ -1,5 +1,5 @@
 import type { Env } from './types'
-import { getApiKey, setApiKey, getSession, tgSendMsg, tgEscape } from './helpers'
+import { getApiKey, setApiKey, getSession, tgSendMsg, tgSendDoc, tgEscape } from './helpers'
 import { handleCouncilCommand, runCouncil } from './council'
 import { SAGE_MAP } from './sages'
 
@@ -83,14 +83,13 @@ export default {
       return new Response('OK', { status: 200 })
     }
 
-    // /report — get markdown report
+    // /report — get markdown report as file
     if (text === '/report') {
       const report = await env.SESSIONS.get(`report:${chatId}`, 'text')
       if (!report) {
         await tgSendMsg(env.TELEGRAM_BOT_TOKEN, chatId, '📭 گزارشی موجود نیست. یک شورا برگزار کن.')
       } else {
-        await tgSendMsg(env.TELEGRAM_BOT_TOKEN, chatId,
-          `📄 گزارش شورا:\n\`\`\`\n${report.slice(0, 4000)}\n\`\`\``)
+        await tgSendDoc(env.TELEGRAM_BOT_TOKEN, chatId, report, 'shora-report.md')
       }
       return new Response('OK', { status: 200 })
     }

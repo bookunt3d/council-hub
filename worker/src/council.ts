@@ -93,89 +93,121 @@ function buildMarkdownReport(question: string, panelName: string, history: SageM
   return lines.join('\n')
 }
 
+// Fisher-Yates shuffle (uniform)
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}
+
 export async function runCouncil(
   env: Env,
   chatId: number,
   question: string,
   panelKey: PanelKey,
-  apiKey: ***,
+  apiKey: string,
 ): Promise<void> {
-  const panel = getPanel(panelKey)
-  const panelName = `${getPanelName(panel.length)} (${panel.map(s => s.name).join('، ')})`
-  const history: SageMessage[] = []
-  const session: CouncilSession = { question, panel: panelKey, step: 1, history, createdAt: Date.now(), updatedAt: Date.now() }
-  await saveSession(env, chatId, session)
-
-  const send = async (sage: Sage, content: string) => {
-    const text = `${sage.emoji} <b>${sage.name}</b>\n\n${tgEscape(content)}`
-    await tgSendMsg(env.TELEGRAM_BOT_TOKEN, chatId, text)
-    history.push({ sageId: sage.id, content })
-    session.history = history
+  try {
+    const panel = getPanel(panelKey)
+    const panelName = `${getPanelName(panel.length)} (${panel.map(s => s.name).join('، ')})`
+    const history: SageMessage[] = []
+    const session: CouncilSession = { question, panel: panelKey, step: 0, history, createdAt: Date.now(), updatedAt: Date.now() }
     await saveSession(env, chatId, session)
-  }
 
-  // Step 1: Opener (Fārābi)
-  const farabi = SAGE_MAP.get('farabi')!
-  const openerPrompt = makeSystemPrompt(farabi, 'opener', question, [])
-  const opener = await mistralChat(apiKey, [
-    { role: 'system', content: openerPrompt },
-    { role: 'user', content: `افتتاحیه جلسه شورای خرد درباره «${question}» را بنویس.` },
-  ])
-  await send(farabi, opener)
-
-  // Step 2: Initial opinions
-  for (const sage of panel) {
-    if (sage.id === 'farabi') continue
-    const prompt = makeSystemPrompt(sage, 'member', question, history)
-    const resp = await mistralChat(apiKey, [
-      { role: 'system', content: prompt },
-      { role: 'user', content: `نظر اولیه خود را درباره «${question}» بیان کن. پایان پاسخ را به حکیم بعدی بسپار.` },
-    ])
-    await send(sage, resp)
-  }
-
-  // Step 3: Debate (2 rounds)
-  const debaters = panel.filter(s => s.id !== 'farabi' && s.id !== 'biruni')
-  for (let round = 1; round <= 2; round++) {
-    const shuffled = [...debaters].sort(() => Math.random() - 0.5)
-    const selected = shuffled.slice(0, Math.min(3, shuffled.length))
-    for (const sage of selected) {
-      const prompt = makeSystemPrompt(sage, 'debater', question, history)
-      const resp = await mistralChat(apiKey, [
-        { role: 'system', content: prompt },
-        { role: 'user', content: `دور ${round} گفتگو: سخنان حکیمان پیشین را نقد کن و استدلال خود را بیان کن.` },
-      ])
-      await send(sage, resp)
+    const send = async (sage: Sage, content: string) => {
+      const text = `${sage.emoji} <b>${sage.name}</b>\n\n${tgEscape(content)}`
+      await tgSendMsg(env.TELEGRAM_BOT_TOKEN, chatId, text)
+      history.push({ sageId: sage.id, content })
+      session.history = history
+      await saveSession(env, chatId, session)
     }
+
+    // Step 1: Opener
+    session.step = 1
+    await saveSession(env, chatId, session)
+    const farabi = SAGE_MAP.get('farabi')
+    const biruni = SAGE_MAP.get('biruni')
+    if (!farabi || !biruni) {
+      await tgSendMsg(env.TELEGRAM_BOT_TOKEN, chatId, '❌ خطای داخلی: تنظیمات شورا مشکل دارد.')
+      return
+    }
+    const openerPrompt = makeSystemPrompt(farabi, 'opener', question, [])
+    const opener = await mistralChat(apiKey, [
+      { role: 'system', content: openerPrompt },
+      { role: 'user', content: `افتتاحیه جلسه شورای خرد درباره «${question}» را بنویس.` },
+    ])
+    await send(farabi, opener)
+
+    // Step 2: Initial opinions — PARALLEL
+    session.step = 2
+    await saveSession(env, chatId, session)
+    const members = panel.filter(s => s.id !== 'farabi')
+    const memberResults = await Promise.all(members.map(sage =>
+      mistralChat(apiKey, [
+        { role: 'system', content: makeSystemPrompt(sage, 'member', question, history) },
+        { role: 'user', content: `نظر اولیه خود را درباره «${question}» بیان کن. پایان پاسخ را به حکیم بعدی بسپار.` },
+      ])
+    ))
+    for (let i = 0; i < members.length; i++) {
+      await send(members[i], memberResults[i])
+    }
+
+    // Step 3: Debate — 2 rounds, debaters in parallel
+    session.step = 3
+    await saveSession(env, chatId, session)
+    const debaters = panel.filter(s => s.id !== 'farabi' && s.id !== 'biruni')
+    for (let round = 1; round <= 2; round++) {
+      const selected = shuffle(debaters).slice(0, Math.min(3, debaters.length))
+      const debateResults = await Promise.all(selected.map(sage =>
+        mistralChat(apiKey, [
+          { role: 'system', content: makeSystemPrompt(sage, 'debater', question, history) },
+          { role: 'user', content: `دور ${round} گفتگو: سخنان حکیمان پیشین را نقد کن و استدلال خود را بیان کن.` },
+        ])
+      ))
+      for (let i = 0; i < selected.length; i++) {
+        await send(selected[i], debateResults[i])
+      }
+    }
+
+    // Step 4: Minutes
+    session.step = 4
+    await saveSession(env, chatId, session)
+    const minutesPrompt = makeSystemPrompt(biruni, 'secretary', question, history)
+    const minutes = await mistralChat(apiKey, [
+      { role: 'system', content: minutesPrompt },
+      { role: 'user', content: `صورت‌جلسه شورا را بنویس: نقاط اشتراک، اختلافات، نکات برجسته.` },
+    ])
+    await send(biruni, minutes)
+
+    // Step 5: Verdict
+    session.step = 5
+    await saveSession(env, chatId, session)
+    const closerPrompt = makeSystemPrompt(farabi, 'closer', question, history)
+    const verdict = await mistralChat(apiKey, [
+      { role: 'system', content: closerPrompt },
+      { role: 'user', content: `رأی نهایی شورا درباره «${question}» را اعلام کن.` },
+    ])
+    await send(farabi, verdict)
+
+    // Store report
+    const md = buildMarkdownReport(question, panelName, history)
+    await env.SESSIONS.put(`report:${chatId}`, md, { expirationTtl: 86400 })
+    await tgSendMsg(env.TELEGRAM_BOT_TOKEN, chatId,
+      '📄 **گزارش کامل شورا**: با دستور /report دریافت کنید.')
+
+    await deleteSession(env, chatId)
+  } catch (err: any) {
+    const msg = `❌ **خطا در شورا:**\n\`${tgEscape(err?.message ?? 'خطای ناشناخته')}\`\n\nدوباره تلاش کن /council`
+    try {
+      await tgSendMsg(env.TELEGRAM_BOT_TOKEN, chatId, msg)
+    } catch { /* ignore */ }
+    await deleteSession(env, chatId)
   }
-
-  // Step 5: Minutes (Biruni)
-  const biruni = SAGE_MAP.get('biruni')!
-  const minutesPrompt = makeSystemPrompt(biruni, 'secretary', question, history)
-  const minutes = await mistralChat(apiKey, [
-    { role: 'system', content: minutesPrompt },
-    { role: 'user', content: `صورت‌جلسه شورا را بنویس: نقاط اشتراک، اختلافات، نکات برجسته.` },
-  ])
-  await send(biruni, minutes)
-
-  // Step 6: Verdict (Fārābi)
-  const closerPrompt = makeSystemPrompt(farabi, 'closer', question, history)
-  const verdict = await mistralChat(apiKey, [
-    { role: 'system', content: closerPrompt },
-    { role: 'user', content: `رأی نهایی شورا درباره «${question}» را اعلام کن.` },
-  ])
-  await send(farabi, verdict)
-
-  // Store report in KV
-  const md = buildMarkdownReport(question, panelName, history)
-  await env.SESSIONS.put(`report:${chatId}`, md, { expirationTtl: 86400 })
-  const linkMsg = `📄 **گزارش کامل شورا**: با دستور /report دریافت کنید.`
-  await tgSendMsg(env.TELEGRAM_BOT_TOKEN, chatId, tgEscape(linkMsg))
-
-  await deleteSession(env, chatId)
 }
 
-// Parse council command — returns response message
 export async function handleCouncilCommand(
   env: Env,
   chatId: number,

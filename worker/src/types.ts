@@ -29,5 +29,4 @@ export interface Env {
   KEYS: KVNamespace
   SESSIONS: KVNamespace
   TELEGRAM_BOT_TOKEN: string
-  COUNCIL_SECRET: string
 }

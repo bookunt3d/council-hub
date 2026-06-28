@@ -20,13 +20,15 @@ export async function tgSendMsg(
 export async function tgSendDoc(
   token: string,
   chatId: number | string,
-  document: string,
+  content: string,
   filename: string,
 ): Promise<Response> {
+  const formData = new FormData()
+  formData.append('chat_id', String(chatId))
+  formData.append('document', new Blob([content], { type: 'text/markdown' }), filename)
   return fetch(`${TG_API}/bot${token}/sendDocument`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ chat_id: chatId, document, filename }),
+    body: formData,
   })
 }
 
