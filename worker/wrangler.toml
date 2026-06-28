@@ -15,4 +15,3 @@ preview_id = ""
 
 # Secrets (set via wrangler secret put)
 # TELEGRAM_BOT_TOKEN — Telegram bot token from @BotFather
-# COUNCIL_SECRET    — internal token for step chain auth
