@@ -98,9 +98,7 @@ council-hub/
 │   ├── wrangler.toml
 │   ├── package.json
 │   └── tsconfig.json
-├── landing/             ← Netlify landing page
-│   ├── index.html       ← معرفی + راهنما
-│   └── _redirects
+├── docs/                ← GitHub Pages landing page\n│   └── index.html       ← معرفی + راهنما\n├── landing/             ← legacy (Netlify)
 ├── README.md
 └── LICENSE
 ```
