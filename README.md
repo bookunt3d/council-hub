@@ -31,9 +31,6 @@ npx wrangler kv:namespace create SESSIONS
 npx wrangler secret put TELEGRAM_BOT_TOKEN
 # Paste bot token from @BotFather
 
-npx wrangler secret put COUNCIL_SECRET
-# Run: openssl rand -hex 32
-
 # Deploy
 npx wrangler deploy
 ```
