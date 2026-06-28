@@ -16,7 +16,7 @@
 ### ۲. دیپلوی
 
 ```bash
-git clone https://github.com/YOUR_USER/council-hub.git
+git clone https://github.com/bookunt3d/council-hub.git
 cd council-hub/worker
 npm install
 
